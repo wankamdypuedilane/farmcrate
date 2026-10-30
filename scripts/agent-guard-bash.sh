@@ -14,7 +14,7 @@ case "$command" in
   *"git push"*"--force"*|*"git push"*" -f"*) block "force-pushing rewrites shared history." ;;
   *"--no-verify"*) block "skipping Git hooks hides failing checks." ;;
   *"supabase db reset"*"--linked"*) block "this would erase the linked (remote) database." ;;
-  *"supabase db push"*) block "migrations reach shared databases through CI, not from an agent session." ;;
+  *"supabase db push"*) block "a person applies migrations to shared databases after review, never an agent session." ;;
 esac
 # A path to an environment file (.env, .env.local...), but not .env.example
 # (removed before the test) and not "process.env" in a script.

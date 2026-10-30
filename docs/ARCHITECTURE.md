@@ -88,7 +88,7 @@ use it at this size. Revisit beyond about 500,000 subscriptions.
 - Vercel project `farmcrate`: Production (`main`), Preview (every pull request,
   staging Supabase project and Stripe test mode).
 - Supabase: two projects, staging and production; migrations applied with
-  `supabase db push` from CI after review.
+  `supabase db push` by a person, from reviewed main.
 - Stripe: test mode in the book; the live switch is a launch-checklist item.
 - Cron: `vercel.json`, daily at 05:00 UTC (the Hobby plan allows daily jobs).
 

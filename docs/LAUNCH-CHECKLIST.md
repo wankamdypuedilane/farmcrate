@@ -9,7 +9,7 @@ Tick every line before the first real payment. Each item says how to check it.
 - [ ] Usability test: five customers of the pilot co-op subscribe on their phones (PRD goal 4).
 
 ## Supabase (production project, separate from staging)
-- [ ] All migrations applied with `supabase db push` from CI; Security Advisor without warnings.
+- [ ] All migrations applied by a person with `supabase db push` from reviewed main; Security Advisor clean.
 - [ ] Auth: Site URL and redirect URLs list only the production domain; SMTP on our own domain.
 - [ ] The co-op, its pickup points, plans, team and time zone entered and checked by Léna.
 - [ ] Backups: daily backups (Pro) at least; restore drill run and dated.
