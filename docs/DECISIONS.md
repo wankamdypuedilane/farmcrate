@@ -95,3 +95,12 @@ Newest at the bottom.
 - Decision: `zonedTimeToInstant()` uses `Intl.DateTimeFormat` (offset of the
   zone at an instant), corrected once around changes of time; tested on both
   changes of time, west of UTC and in UTC.
+
+## D13. Whose Stripe account? One per installation, for the pilot
+- Context: payments must reach the co-op that packs the boxes. One installation
+  with one `STRIPE_SECRET_KEY` collects every payment into a single account.
+- Decision: during the pilot there is one co-op, and the installation uses the
+  co-op's own Stripe account (FarmCrate operates it on the co-op's behalf, by
+  contract). No second co-op takes payments on this installation until each
+  co-op has its own connected account (Stripe Connect, roadmap).
+- Accepted: the multi-tenant schema is ready before the payments are.

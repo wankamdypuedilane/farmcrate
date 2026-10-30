@@ -26,8 +26,11 @@ billing unit tests and a test-mode subscription end to end.
 - À-la-carte extras with stock (eggs, cheese).
 - French interface (the pilot co-op's customers asked for it).
 
+## Before a second co-op takes payments (D13)
+- Stripe Connect: each co-op gets its own connected account, so that its
+  customers' money goes directly to it; FarmCrate's fee is taken per payment.
+
 ## Later, when there are more than ten co-ops
-- Self-service onboarding of co-ops, each with its own Stripe connected account
-  (Stripe Connect) so that money goes directly to the co-op.
+- Self-service onboarding of co-ops (time zone, weekday and cut-off checked on entry).
 - Price changes for existing subscriptions (Stripe Prices per plan instead of `price_data`).
 - Snapshot of the packing list at the cut-off, if late changes cause trouble (D10).
