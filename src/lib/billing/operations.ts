@@ -11,7 +11,34 @@ export const billingDeps: BillingDeps = {
   markProcessed: store.markEventProcessed,
   activate: store.activateSubscription,
   sync: store.syncSubscription,
+  async cancelOrphan(stripeSubscriptionId, sessionId) {
+    await getStripe().subscriptions.cancel(stripeSubscriptionId);
+    // The first payment was taken: an operator refunds it (docs/DECISIONS.md, D15).
+    log("error", "Orphan checkout paid: subscription cancelled, refund the first payment", { stripeSubscriptionId, sessionId });
+  },
 };
+
+/**
+ * Closes the customer's previous Checkout session before a new one is opened, so
+ * that an old payment page can no longer be paid. Returns false if that session
+ * was already paid: the webhook is about to activate the subscription.
+ */
+export async function closePreviousCheckout(customerId: string, coopId: string): Promise<boolean> {
+  const previous = await store.pendingCheckoutSession(customerId, coopId);
+  if (!previous) return true;
+  const session = await getStripe().checkout.sessions.retrieve(previous);
+  if (session.status === "complete") return false;
+  if (session.status === "open") {
+    try {
+      await getStripe().checkout.sessions.expire(previous);
+    } catch (error) {
+      // Paid between the two calls: only an open session can be expired.
+      if ((await getStripe().checkout.sessions.retrieve(previous)).status === "complete") return false;
+      throw error;
+    }
+  }
+  return true;
+}
 
 /** The customer's Stripe customer, created once and saved on the profile. */
 export async function ensureStripeCustomer(user: { id: string; email: string | null }, name: string) {

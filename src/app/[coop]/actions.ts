@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { getProfile, requireUser } from "@/lib/auth/current-user";
 import { buildSubscriptionCheckout } from "@/lib/billing/checkout";
-import { ensureStripeCustomer } from "@/lib/billing/operations";
+import { closePreviousCheckout, ensureStripeCustomer } from "@/lib/billing/operations";
 import { subscribeSchema } from "@/lib/billing/schemas";
 import { AlreadySubscribedError, attachCheckoutSession, openSubscription } from "@/lib/billing/store";
 import { getStripe, hasStripe } from "@/lib/billing/stripe";
@@ -25,6 +25,11 @@ export async function subscribe(_prev: SubscribeState, formData: FormData): Prom
   const plan = catalog?.plans.find((p) => p.id === planId);
   const pickup = catalog?.pickupPoints.find((p) => p.id === pickupPointId);
   if (!catalog || !plan || !pickup) return { status: "error", message: "This box is no longer available." };
+
+  // An earlier, abandoned payment page must not stay payable once a new one exists.
+  if (!(await closePreviousCheckout(user.id, catalog.coop.id))) {
+    return { status: "error", message: "Your payment is being confirmed: see My boxes in a moment." };
+  }
 
   let subscriptionId: string;
   try {

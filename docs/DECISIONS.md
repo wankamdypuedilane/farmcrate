@@ -114,3 +114,16 @@ Newest at the bottom.
   starts with the same delivery (`deliveryRows(..., activatedAt)`).
 - Accepted: the first payment covers the box of the next open delivery, which
   can be up to nine days later.
+
+## D15. One payable Checkout page at a time
+- Context: found in review. Reusing an abandoned subscription left its first
+  Checkout session open for up to 24 hours. Paid after a newer session was
+  attached, it created a Stripe subscription that `activate_subscription`
+  rejects (`mismatch`): billed every week, never packed.
+- Decision: before opening a new session, the subscribe action expires the
+  previous one (`closePreviousCheckout`); if that one was already paid, it tells
+  the customer the payment is being confirmed and opens nothing. If a mismatch
+  still happens (two tabs at once), the webhook cancels that Stripe subscription
+  at once and logs an error.
+- Accepted: the first payment of such an orphan is refunded by an operator from
+  the Stripe Dashboard, guided by the log line. Rare enough not to automate yet.

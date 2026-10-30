@@ -52,6 +52,7 @@ function deps(): BillingDeps {
     markProcessed: vi.fn(async (id: string) => void seen.add(id)),
     activate: vi.fn(async () => "activated"),
     sync: vi.fn(async () => "updated"),
+    cancelOrphan: vi.fn(async () => {}),
   };
 }
 
@@ -69,6 +70,16 @@ describe("billing events", () => {
       subscriptionId: "s1", sessionId: "cs_test_1", stripeSubscriptionId: "sub_test_1", eventAt: new Date(1_798_000_000_000),
     });
     expect(await handleBillingEvent(completed, d)).toBe("duplicate");
+  });
+
+  it("cancel the subscription of a paid Checkout that our row no longer points to", async () => {
+    const d = { ...deps(), activate: vi.fn(async () => "mismatch") };
+    const completed = event("checkout.session.completed", {
+      id: "cs_test_old", mode: "subscription", client_reference_id: "s1", subscription: "sub_test_old",
+    });
+    expect(await handleBillingEvent(completed, d)).toBe("orphan_canceled");
+    expect(d.cancelOrphan).toHaveBeenCalledWith("sub_test_old", "cs_test_old");
+    expect(d.markProcessed).toHaveBeenCalledOnce();
   });
 
   it("sync status and period end, with the event's own time for ordering", async () => {

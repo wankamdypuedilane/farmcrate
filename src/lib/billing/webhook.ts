@@ -6,6 +6,8 @@ export type BillingDeps = {
   markProcessed(eventId: string, type: string): Promise<void>;
   activate(input: { subscriptionId: string; sessionId: string; stripeSubscriptionId: string; eventAt: Date }): Promise<string>;
   sync(input: { stripeSubscriptionId: string; status: SubscriptionStatus; periodEnd: Date | null; eventAt: Date }): Promise<string>;
+  /** Cancels a Stripe subscription that no row of ours will ever pack for. */
+  cancelOrphan(stripeSubscriptionId: string, sessionId: string): Promise<void>;
 };
 
 const idOf = (value: string | { id: string } | null) => (value === null ? null : typeof value === "string" ? value : value.id);
@@ -28,6 +30,12 @@ export async function handleBillingEvent(event: Stripe.Event, deps: BillingDeps)
           stripeSubscriptionId,
           eventAt,
         });
+        // A session that our row no longer points to (a second tab, an older checkout):
+        // nobody would pack its boxes, so its subscription must not keep billing.
+        if (result === "mismatch") {
+          await deps.cancelOrphan(stripeSubscriptionId, session.id);
+          result = "orphan_canceled";
+        }
       }
       break;
     }

@@ -20,6 +20,19 @@ export async function openSubscription(input: { customerId: string; coopId: stri
   return data as string;
 }
 
+/** The Checkout session of the customer's pending subscription with this co-op, if any. */
+export async function pendingCheckoutSession(customerId: string, coopId: string) {
+  const { data, error } = await createAdminClient()
+    .from("subscriptions")
+    .select("checkout_session_id")
+    .eq("customer_id", customerId)
+    .eq("coop_id", coopId)
+    .eq("status", "incomplete")
+    .maybeSingle<{ checkout_session_id: string | null }>();
+  if (error) throw new Error(`Could not read the pending checkout: ${error.message}`);
+  return data?.checkout_session_id ?? null;
+}
+
 export async function attachCheckoutSession(subscriptionId: string, sessionId: string) {
   const { error } = await createAdminClient()
     .from("subscriptions")
