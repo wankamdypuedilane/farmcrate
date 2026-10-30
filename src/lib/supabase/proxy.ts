@@ -17,14 +17,14 @@ export async function updateSession(request: NextRequest) {
       getAll() {
         return request.cookies.getAll();
       },
-      setAll(cookiesToSet) {
+      setAll(cookiesToSet, headers) {
         for (const { name, value } of cookiesToSet) {
           request.cookies.set(name, value);
         }
         response = NextResponse.next({ request });
-        for (const { name, value, options } of cookiesToSet) {
-          response.cookies.set(name, value, options);
-        }
+        for (const { name, value, options } of cookiesToSet) response.cookies.set(name, value, options);
+        // Never cache a response that sets auth cookies: it could hand one user's session to another.
+        for (const [key, value] of Object.entries(headers)) response.headers.set(key, value);
       },
     },
   });
@@ -37,7 +37,7 @@ export async function updateSession(request: NextRequest) {
   // First line of defence: send visitors to sign-in before rendering private pages.
   // Each page and Server Action still checks the user itself.
   const { pathname, search } = request.nextUrl;
-  if (!isSignedIn && protectedPrefixes.some((prefix) => pathname.startsWith(prefix))) {
+  if (!isSignedIn && protectedPrefixes.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
     const url = request.nextUrl.clone();
     url.pathname = "/sign-in";
     url.search = `?next=${encodeURIComponent(pathname + search)}`;
