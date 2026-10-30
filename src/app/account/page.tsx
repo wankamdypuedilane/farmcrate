@@ -57,7 +57,13 @@ async function Subscriptions() {
           {s.status === "active" && (
             <DeliveryList
               subscriptionId={s.id}
-              deliveries={deliveryRows(scheduleOf(s.coops), s.skips.map((k) => k.delivery_date), now)}
+              deliveries={deliveryRows(
+                scheduleOf(s.coops),
+                s.skips.map((k) => k.delivery_date),
+                now,
+                4,
+                s.activated_at ? new Date(s.activated_at) : undefined,
+              )}
               action={skipDelivery}
             />
           )}

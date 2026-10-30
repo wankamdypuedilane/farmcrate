@@ -51,7 +51,8 @@ supabase/migrations/  the schema: tables, RLS policies, SQL functions
    abandoned one) → Stripe customer (once) → Checkout session (idempotency key)
    → `attachCheckoutSession` → redirect to Stripe.
 2. **Activation**: Stripe → `/api/stripe/webhook` (raw body, signature) →
-   `handleBillingEvent` → `activate_subscription` (checks the session id).
+   `handleBillingEvent` → `activate_subscription` (checks the session id, sets
+   `activated_at` once: the first box follows that instant, D14).
 3. **Renewal, failure, cancellation**: `customer.subscription.updated/deleted` →
    `sync_subscription` (older events ignored, D6).
 4. **Skip**: Server Action `skipDelivery` → insert with the user's client (RLS
@@ -75,7 +76,7 @@ PostgreSQL 16, 51 co-ops, 60,000 subscriptions, 389,538 skips (one year),
 
 | Query | Time | Plan |
 |---|---|---|
-| Packing list of one co-op (1,058 subscriptions) | 10-35 ms | bitmap scan on `subscriptions_coop_status_idx` or parallel sequential scan, then one probe of the `skips` primary key per subscription |
+| Packing list of one co-op (1,058 subscriptions), `packing_list()` called as staff | 13-16 ms | bitmap scan on `subscriptions_coop_status_idx` or parallel sequential scan, then one probe of the `skips` primary key per subscription; the cut-off is computed once (`(select ...)`) |
 | "My boxes" of one customer | 1 ms | `subscriptions_customer_idx`, then `skips` primary key |
 | Skips waiting for their credit | 0.03 ms | partial index `skips_pending_credit_idx` |
 

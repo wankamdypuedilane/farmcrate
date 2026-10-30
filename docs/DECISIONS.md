@@ -104,3 +104,13 @@ Newest at the bottom.
   contract). No second co-op takes payments on this installation until each
   co-op has its own connected account (Stripe Connect, roadmap).
 - Accepted: the multi-tenant schema is ready before the payments are.
+
+## D14. The first box follows the payment's cut-off
+- Context: found while reviewing the packing list: a customer who paid on
+  Thursday was counted in Friday's list, already printed on Wednesday.
+- Decision: `subscriptions.activated_at` is set once, from the event time of
+  `checkout.session.completed`. The packing list counts a subscription for a
+  delivery only if it was activated before that delivery's cut-off; "My boxes"
+  starts with the same delivery (`deliveryRows(..., activatedAt)`).
+- Accepted: the first payment covers the box of the next open delivery, which
+  can be up to nine days later.

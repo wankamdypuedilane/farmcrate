@@ -6,6 +6,7 @@ export type MySubscription = {
   id: string;
   status: "incomplete" | "active" | "past_due" | "canceled";
   current_period_end: string | null;
+  activated_at: string | null;
   coops: Coop;
   box_plans: { name: string; weekly_price_cents: number };
   pickup_points: { name: string };
@@ -18,7 +19,7 @@ export async function getMySubscriptions(userId: string): Promise<MySubscription
   const { data, error } = await supabase
     .from("subscriptions")
     .select(
-      "id, status, current_period_end, coops(id, slug, name, timezone, delivery_weekday, cutoff_days, cutoff_time), " +
+      "id, status, current_period_end, activated_at, coops(id, slug, name, timezone, delivery_weekday, cutoff_days, cutoff_time), " +
         "box_plans(name, weekly_price_cents), pickup_points(name), skips(delivery_date)",
     )
     .eq("customer_id", userId)

@@ -85,6 +85,8 @@ messages.
 - **FR9** Customers change their card or cancel in the Stripe customer portal.
 - **FR10** Each co-op's private data (subscriptions, skips, staff) is visible
   only to its customers (their own rows) and its staff.
+- **FR11** (added after the first review) A new subscriber's first box is the
+  first delivery whose cut-off comes after the payment is confirmed.
 
 ## 6. Non-functional requirements
 
@@ -113,6 +115,8 @@ is in them this week, so that I can decide to subscribe.
 box is paid every week without thinking about it.
 - Given I am signed in, when I choose a plan and a pickup point and pay in
   Stripe Checkout, then "My boxes" shows the subscription as Active.
+- Given I pay on Thursday, after Wednesday's cut-off, then my first box is the
+  following Friday's, and this Friday's packing list does not count me.
 - Given I abandon the payment, when I come back and choose again, then I am not
   subscribed twice and no subscription is active.
 - Given I already have an active subscription with this co-op, when I try to

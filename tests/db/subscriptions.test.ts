@@ -26,7 +26,9 @@ let pastFriday: string;
 async function subscribe(customer: string, plan = small, pickup = huelgoat, status = "active") {
   const { id } = await one("select public.open_subscription($1, $2, $3, $4) as id", [customer, coop, plan, pickup]);
   if (status !== "incomplete") {
-    await db.query("update public.subscriptions set status = $2 where id = $1", [id, status]);
+    await db.query("update public.subscriptions set status = $2, activated_at = now() - interval '30 days' where id = $1", [
+      id, status,
+    ]);
   }
   return id as string;
 }
@@ -135,6 +137,9 @@ describe("Stripe events", () => {
         one("select public.activate_subscription($1, 'cs_test_y', 'sub_test_y', '2026-12-01T10:00:00Z') as r", [id]).then((r) => r.r);
       expect(await activate()).toBe("activated");
       expect(await activate()).toBe("already_linked");
+      expect((await one("select activated_at from public.subscriptions where id = $1", [id])).activated_at).toEqual(
+        new Date("2026-12-01T10:00:00Z"),
+      );
 
       const sync = (status: string, at: string) =>
         one("select public.sync_subscription('sub_test_y', $1, null, $2) as r", [status, at]).then((r) => r.r);
@@ -248,6 +253,24 @@ describe("the packing list", () => {
       expect(await list(anna, openFriday)).toEqual([]); // a customer
     } finally {
       await db.query("delete from public.subscriptions where id = any($1)", [[a, y]]);
+    }
+  });
+
+  it("counts a new subscriber from the first delivery after the payment", async () => {
+    const a = await subscribe(anna, small, huelgoat);
+    try {
+      // Paid one minute after the cut-off of openFriday: the first box is the week after.
+      await db.query(
+        "update public.subscriptions set activated_at = private.delivery_cutoff($2, $3) + interval '1 minute' where id = $1",
+        [a, coop, openFriday],
+      );
+      const list = (day: string) =>
+        asUser(db, lena, () => db.query("select * from public.packing_list($1, $2)", [coop, day]).then((r) => r.rows));
+      expect(await list(openFriday)).toEqual([]);
+      const nextWeek = (await one("select ($1::date + 7)::text as day", [openFriday])).day;
+      expect(await list(nextWeek)).toEqual([{ pickup_point: "Huelgoat covered market", plan: "Small box", boxes: 1 }]);
+    } finally {
+      await db.query("delete from public.subscriptions where id = $1", [a]);
     }
   });
 

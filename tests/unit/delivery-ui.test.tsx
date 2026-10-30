@@ -19,6 +19,15 @@ describe("deliveryRows", () => {
     expect(rows[1]!.label).toBe("Friday 11 December");
     expect(rows[1]!.cutoffLabel).toBe("Changes close Wednesday 9 December at 18:00");
   });
+
+  it("starts with the first delivery after the payment", () => {
+    // Paid on Thursday 3 December: Friday the 4th closed on Wednesday, so the first box is the 11th.
+    const now = new Date("2026-12-03T09:00:00Z");
+    const rows = deliveryRows(schedule, [], now, 4, new Date("2026-12-03T08:55:00Z"));
+    expect(rows.map((r) => r.date)).toEqual(["2026-12-11", "2026-12-18", "2026-12-25", "2027-01-01"]);
+    // Paid before the cut-off: Friday the 4th is the first box.
+    expect(deliveryRows(schedule, [], now, 4, new Date("2026-12-02T16:59:00Z"))[0]!.date).toBe("2026-12-04");
+  });
 });
 
 describe("DeliveryList", () => {
