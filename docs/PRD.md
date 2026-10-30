@@ -121,7 +121,7 @@ box is paid every week without thinking about it.
 **US3, skip.** As a customer, I want to skip a week I am away, so that I do not
 pay for a box nobody collects.
 - Given an active subscription and a delivery whose cut-off has not passed, when
-  I press "Skip this delivery", then the delivery shows "Skipped", and the box
+  I press "Skip this week", then the delivery shows "Skipped", and the box
   price is credited for my next payment.
 - Given the cut-off has passed, then the button is gone, and a request sent
   anyway is refused by the server.
