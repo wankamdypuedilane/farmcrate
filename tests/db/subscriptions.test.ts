@@ -197,7 +197,7 @@ describe("skipping a week", () => {
   });
 
   it("closes at the same instant in SQL and in TypeScript, across a change of time", async () => {
-    for (const day of ["2026-12-04", "2027-04-02", "2027-10-29"]) {
+    for (const day of ["2026-12-04", "2027-03-26", "2027-04-02", "2027-10-29", "2027-11-05"]) {
       const { cutoff } = await one("select private.delivery_cutoff($1, $2) as cutoff", [coop, day]);
       const ts = deliveryCutoff({ timeZone: "Europe/Paris", deliveryWeekday: 5, cutoffDays: 2, cutoffTime: "18:00" }, day);
       expect((cutoff as Date).toISOString(), day).toBe(ts.toISOString());
