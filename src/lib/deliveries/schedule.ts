@@ -1,5 +1,5 @@
 // Delivery rules, as pure functions. The database applies the same rule
-// (private.can_skip); tests/db/skips.test.ts checks that both agree.
+// (private.can_skip); tests/db/subscriptions.test.ts checks that both agree.
 
 export type CoopSchedule = {
   /** IANA time zone of the co-op, such as "Europe/Paris". */
