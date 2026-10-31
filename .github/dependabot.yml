@@ -8,10 +8,21 @@ updates:
       interval: weekly
     open-pull-requests-limit: 5
     groups:
+      # react and react-dom must always have the same version: one pull request for both.
+      react:
+        patterns: ["react", "react-dom", "@types/react", "@types/react-dom"]
       # One pull request for all patch and minor updates of development tools.
       dev-dependencies:
         dependency-type: development
         update-types: [minor, patch]
+    ignore:
+      # Major versions the Next.js 16 tooling does not support yet (see the book,
+      # appendix D): typescript-eslint requires TypeScript < 6.1, and
+      # eslint-config-next is built and tested against ESLint 9. Upgrade on purpose.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
